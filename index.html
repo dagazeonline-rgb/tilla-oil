@@ -23,8 +23,9 @@ section{padding:60px 0;background:#03140b}.dark2{background:#061d10}.title{text-
       <form onsubmit="submitOrder(event)">
         <label class="label">Full Name *</label><input class="input" required placeholder="Enter your full name">
         <label class="label">Mobile Number *</label><input class="input" required placeholder="03XXXXXXXXX" pattern="03[0-9]{9}">
-        <label class="label">Complete Address *</label><textarea class="input" required placeholder="House number, street, area"></textarea>
-        <label class="label">City *</label><input class="input" required placeholder="Enter your city">
+        <label class="label">Complete Address *</label><textarea class="input" id="address" required placeholder="House number, street, area"></textarea>
+        <label class="label">Nearby Landmark</label><input class="input" id="landmark" placeholder="Nearest famous place / landmark">
+        <label class="label">City *</label><input class="input" id="city" required placeholder="Enter your city">
         <label class="label">Choose Your Deal *</label>
         <div class="deals"><div class="deal active" onclick="deal(this,1799)"><strong>20 ML</strong>Rs. 1,799</div><div class="deal" onclick="deal(this,2499)"><strong>30 ML</strong>Rs. 2,499</div></div>
         <div class="ship">🚚 Delivery Charges: Rs. 200</div>
@@ -44,5 +45,23 @@ section{padding:60px 0;background:#03140b}.dark2{background:#061d10}.title{text-
 <section id="reviews"><div class="wrap"><div class="title"><h2>Customer Reviews</h2></div><div class="reviews"><div class="review">★★★★★<p>“Order process simple tha aur delivery experience acha raha.”</p><b>— Customer, Lahore</b></div><div class="review">★★★★★<p>“Packaging achi thi aur website se order karna easy tha.”</p><b>— Customer, Islamabad</b></div><div class="review">★★★★★<p>“COD option convenient hai.”</p><b>— Customer, Karachi</b></div></div></div></section>
 <section id="faq"><div class="wrap"><div class="title"><h2>Frequently Asked Questions</h2></div><div class="faq"><details open><summary>How can I order?</summary><p>Select bottle size, fill the form and submit.</p></details><details><summary>What sizes are available?</summary><p>20 ML and 30 ML.</p></details><details><summary>What is delivery charge?</summary><p>Rs. 200 in this demo.</p></details><details><summary>Is Cash on Delivery available?</summary><p>Yes.</p></details></div></div></section>
 <a class="float" href="#order">Order Now →</a><footer><div class="footer-logo">ABDUL RAFE <span>HERBAL</span></div><p>© 2026 Abdul Rafe Herbal</p></footer>
-<script>function deal(e,p){document.querySelectorAll('.deal').forEach(x=>x.classList.remove('active'));e.classList.add('active');document.getElementById('pp').textContent='Rs. '+p.toLocaleString();document.getElementById('st').textContent='Rs. '+(p+200).toLocaleString()}function submitOrder(e){e.preventDefault();alert('Thank you! Your Cash on Delivery order has been submitted.')} </script>
+<script>
+const GOOGLE_SHEET_URL='https://script.google.com/macros/s/AKfycbzBF55ably9so9hshAltPuKnXTBkyDWZVGAv64TrvadhpsIhCn8TIlvGOiSV8kUPH1W/exec';
+let selectedDeal='20 ML', selectedPrice=1799;
+function deal(e,p){document.querySelectorAll('.deal').forEach(x=>x.classList.remove('active'));e.classList.add('active');selectedPrice=p;selectedDeal=p===1799?'20 ML':'30 ML';document.getElementById('pp').textContent='Rs. '+p.toLocaleString();document.getElementById('st').textContent='Rs. '+(p+200).toLocaleString()}
+async function submitOrder(e){
+  e.preventDefault();
+  const form=e.target, button=form.querySelector('.submit');
+  const inputs=form.querySelectorAll('input, textarea');
+  const name=inputs[0].value.trim(), phone=inputs[1].value.trim(), address=document.getElementById('address').value.trim(), landmark=document.getElementById('landmark').value.trim(), city=document.getElementById('city').value.trim();
+  const original=button.innerHTML; button.disabled=true; button.innerHTML='⏳ Sending Order...';
+  const data={name,phone,address,landmark,city,deal:selectedDeal,price:selectedPrice};
+  try{
+    await fetch(GOOGLE_SHEET_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(data)});
+    alert('Thank you! Your Cash on Delivery order has been received.');
+    form.reset(); document.querySelectorAll('.deal').forEach(x=>x.classList.remove('active')); document.querySelector('.deal').classList.add('active'); selectedDeal='20 ML'; selectedPrice=1799; document.getElementById('pp').textContent='Rs. 1,799'; document.getElementById('st').textContent='Rs. 1,999';
+  }catch(err){alert('Order submit nahi ho saka. Please dobara try karein.');}
+  button.disabled=false; button.innerHTML=original;
+}
+</script>
 </body></html>
